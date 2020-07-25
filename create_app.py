@@ -2,6 +2,7 @@ import os
 import platform
 import subprocess
 import sys
+from pathlib import Path
 
 import typer
 
@@ -34,34 +35,36 @@ def cmdline(command):
         windows_cmdline(command)
     elif "darwin" in operating_system:
         command = command.split("\n")
-        macos_cmdline(command)
+        mac_os_cmdline(command)
     else:
         print("Operating system not supported, please use Mac OS or Windows")
         sys.exit(1)
 
 
-def macos_cmdline(cmds):
-    cmds = " && ".join(cmds)
-    subprocess.run(cmds, shell=True)
+def mac_os_cmdline(commands):
+    commands = " && ".join(commands)
+    subprocess.run(commands, shell=True)
 
 
-def windows_cmdline(cmds):
-    cmds = " & ".join(cmds)
-    cmds = cmds.replace("\\", "/")
-    subprocess.run(cmds, shell=True)
+def windows_cmdline(commands):
+    commands = " & ".join(commands)
+    commands = commands.replace("\\", "/")
+    subprocess.run(commands, shell=True)
 
 
 def create_project(project_path, react_name):
     project_path = replace_all_paths(project_path)
     react_name = react_name.lower()
+    cwd = os.getcwd()
+    cwd = (str(Path(cwd))).strip()
     cli_commands = [
         "cd " + project_path,
         "npx create-react-app " + react_name,
         "rm -rf " + react_name + "/src",
         "rm -rf " + react_name + "/public",
-        "cp rt.py " + react_name + "/rt.py",
-        "cp -r public " + react_name + "/public",
-        "cp -r src " + react_name + "/src",
+        "cp " + cwd + "/rt.py " + react_name + "/rt.py",
+        "cp -r " + cwd + "/public " + react_name + "/public",
+        "cp -r " + cwd + "/src " + react_name + "/src",
         "cd " + react_name,
         "yarn add react-router-dom",
         "yarn add @material-ui/core",
@@ -75,8 +78,10 @@ def create_project(project_path, react_name):
         # "npm install --save @types/react-dom",
         # "npm install --save @types/jest"
     ]
-
+    print(cwd)
     cmdline("\n".join(cli_commands))
+    typer.secho(f"Project Successfully Created, please read documentation for how to use rt.py for creating new classes"
+                f" or functions in React", fg=typer.colors.GREEN)
 
 
 def create_app(project_name: str, project_path: str):
